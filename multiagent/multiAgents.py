@@ -74,8 +74,16 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
+        #Ideas:
+        #USE A WEIGHTED LINEAR SUM OF THE FOLLOWING:
+        #Wether the move results in a win or a loss (the former the better, the latter the worse)
+        #Distance to nearest ghost (the further the better, unless the ghost is scared) 
+        #Distance to nearest food (the closer the better)
+        #Number of remaining food pellets (the fewer the better)
+        #Number of remaining power pellets (the fewer the better)
+    
         return successorGameState.getScore()
-
+        
 def scoreEvaluationFunction(currentGameState):
     """
     This default evaluation function just returns the score of the state.
@@ -135,6 +143,11 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
+        #Ideas:
+        #Implement the minimax algorithm with getNumAgents()-1 number of min agents and 1 max agent
+        #Terminal states are either win/loss states or states at the maximum depth
+        #Use self.evaluationFunction to evaluate terminal states
+        #Return the action that leads to the best value for the max agent at the root node
         util.raiseNotDefined()
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
@@ -147,6 +160,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
+        #Basicallty the same as minimax but with alpha-beta pruning
         util.raiseNotDefined()
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
@@ -162,6 +176,8 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
+        #Basically the same as minimax but with expectimax instead of min nodes
+        #Use the average value of the successor states for the expectimax nodes
         util.raiseNotDefined()
 
 def betterEvaluationFunction(currentGameState):
@@ -172,6 +188,11 @@ def betterEvaluationFunction(currentGameState):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
+    #Talk to Tony about different algorithms to consider
+    #Ideas: 
+    #Value iteration or Policy iteration is the first that come to mind, but this isn't really a MDP
+    #Maybe A* search if we can come up with a good heuristic
+
     util.raiseNotDefined()
 
 # Abbreviation

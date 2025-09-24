@@ -1,0 +1,6 @@
+{
+    "editor.inlineSuggest.enabled": true,
+    "editor.acceptSuggestionOnEnter": "on",
+    "editor.suggestSelection": "first",
+    "editor.tabCompletion": "on"
+}
