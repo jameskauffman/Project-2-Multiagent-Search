@@ -178,7 +178,39 @@ class MinimaxAgent(MultiAgentSearchAgent):
         #Terminal states are either win/loss states or states at the maximum depth
         #Use self.evaluationFunction to evaluate terminal states
         #Return the action that leads to the best value for the max agent at the root node
-        util.raiseNotDefined()
+        
+        best_value = float('-inf')
+        best_action = None
+        for action in gameState.getLegalActions(0):
+            successor = gameState.generateSuccessor(0, action)
+            if best_value < self.minimax(successor, self.depth, 1):
+                best_value = self.minimax(successor, self.depth, 1)
+                best_action = action
+         
+        return best_action
+        
+    def minimax(self,gameState, depth, agentIndex):
+        value = 0
+        if gameState.isWin() or gameState.isLose():
+            return gameState.getScore()
+        if depth == 0:
+            return self.evaluationFunction(gameState)
+        
+        if agentIndex == 0: #Max agent
+            value = float('-inf')
+            for action in gameState.getLegalActions(agentIndex):
+                successor = gameState.generateSuccessor(agentIndex, action)
+                value = max(value, self.minimax(successor, depth, 1))
+            return value
+        else: #Min agent
+            value = float('inf')
+            for action in gameState.getLegalActions(agentIndex):
+                successor = gameState.generateSuccessor(agentIndex, action)
+                if agentIndex == gameState.getNumAgents() - 1:
+                    value = min(value, self.minimax(successor, depth - 1, 0))
+                else:
+                    value = min(value, self.minimax(successor, depth, agentIndex + 1))
+        return value
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
@@ -191,8 +223,61 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
         #Basicallty the same as minimax but with alpha-beta pruning
-        util.raiseNotDefined()
-
+         
+        best_value = float('-inf')
+        best_action = None
+        alpha = float('-inf')
+        beta = float('inf')
+        for action in gameState.getLegalActions(0):
+            successor = gameState.generateSuccessor(0, action)
+            value = self.alphabeta(successor, self.depth, 1, alpha, beta)
+            if best_value < value:
+                best_value = value
+                best_action = action
+            alpha = max(alpha, best_value)
+         
+        return best_action
+        
+    def alphabeta(self,gameState, depth, agentIndex, alpha, beta):
+        value = 0
+        if gameState.isWin() or gameState.isLose():
+            return gameState.getScore()
+        if depth == 0:
+            return self.evaluationFunction(gameState)
+        
+        if agentIndex == 0: #Max agent
+            return self.max_value(gameState, value, depth ,alpha, beta)
+        else: #Min agent
+            return self.min_value(gameState, value, depth, agentIndex, alpha, beta)
+    
+    def max_value(self, gameState, value, depth, alpha, beta):
+        actions = gameState.getLegalActions(0)
+        if not actions:
+            return self.evaluationFunction(gameState)
+        value = float('-inf')
+        for action in actions:
+            successor = gameState.generateSuccessor(0, action)
+            value = max(value, self.alphabeta(successor, depth, 1, alpha, beta))
+            if value > beta:
+                return value
+            alpha = max(alpha, value)
+        return value
+    
+    def min_value(self, gameState, value, depth, agentIndex, alpha, beta):
+        actions = gameState.getLegalActions(agentIndex)
+        if not actions:
+            return self.evaluationFunction(gameState)
+        value = float('inf')
+        for action in actions:
+            successor = gameState.generateSuccessor(agentIndex, action)
+            if agentIndex == gameState.getNumAgents() - 1:
+                value = min(value, self.alphabeta(successor, depth - 1, 0, alpha, beta))
+            else:
+                value = min(value, self.alphabeta(successor, depth, agentIndex + 1,alpha, beta))
+            if value < alpha:
+                return value
+            beta = min(beta, value)
+        return value
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
       Your expectimax agent (question 4)
