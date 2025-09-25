@@ -69,7 +69,7 @@ class ReflexAgent(Agent):
         # Useful information you can extract from a GameState (pacman.py)
         successorGameState = currentGameState.generatePacmanSuccessor(action)
         newPos = successorGameState.getPacmanPosition()
-        newFood = successorGameState.getFood()
+        newFood = successorGameState.getFood().asList()
         newGhostStates = successorGameState.getGhostStates()
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
@@ -81,8 +81,38 @@ class ReflexAgent(Agent):
         #Distance to nearest food (the closer the better)
         #Number of remaining food pellets (the fewer the better)
         #Number of remaining power pellets (the fewer the better)
+        
+        if successorGameState.isWin():
+            return float('inf')
+        if successorGameState.isLose():
+            return float('-inf')
+        
+        
+        score = successorGameState.getScore()
+        
+        if newFood:
+            minFoodDistance = min([manhattanDistance(newPos, food) for food in newFood])
+            food_score = 1.0 / (minFoodDistance + 1)  # Closer food increases score
+        else:
+            food_score = 0
+        
+        ghost_score = 0.0
+        for g,t in zip(newGhostStates,newScaredTimes):
+            ghostDistance = manhattanDistance(newPos, g.getPosition())
+            if t > 0:  # Ghost is scared
+                if ghostDistance > 0:
+                    ghost_score += 200.0 / ghostDistance  # Closer scared ghost increases score
+            else:  # Ghost is not scared
+                if ghostDistance > 0:
+                    ghost_score -= 10.0 / ghostDistance  # Closer active ghost decreases score
+                else:
+                    return float('-inf')  # Collision with active ghost is the worst
+        
+        score_weight = 5
+        food_weight = 10
+        ghost_weight = 1
     
-        return successorGameState.getScore()
+        return (score_weight*score + food_weight*food_score + ghost_weight*ghost_score)
         
 def scoreEvaluationFunction(currentGameState):
     """
