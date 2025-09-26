@@ -74,8 +74,7 @@ class ReflexAgent(Agent):
         newGhostStates = successorGameState.getGhostStates()
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
-        #Ideas:
-        #USE A WEIGHTED LINEAR SUM OF THE FOLLOWING:
+        #Weighted linear sum of the following features:
         #Wether the move results in a win or a loss (the former the better, the latter the worse)
         #Distance to nearest ghost (the further the better, unless the ghost is scared) 
         #Distance to nearest food (the closer the better)
@@ -202,16 +201,16 @@ class MinimaxAgent(MultiAgentSearchAgent):
             value = float('-inf')
             for action in gameState.getLegalActions(agentIndex):
                 successor = gameState.generateSuccessor(agentIndex, action)
-                value = max(value, self.minimax(successor, depth, 1))
+                value = max(value, self.__minimax__(successor, depth, 1))
             return value
         else: #Min agent
             value = float('inf')
             for action in gameState.getLegalActions(agentIndex):
                 successor = gameState.generateSuccessor(agentIndex, action)
                 if agentIndex == gameState.getNumAgents() - 1:
-                    value = min(value, self.minimax(successor, depth - 1, 0))
+                    value = min(value, self.__minimax__(successor, depth - 1, 0))
                 else:
-                    value = min(value, self.minimax(successor, depth, agentIndex + 1))
+                    value = min(value, self.__minimax__(successor, depth, agentIndex + 1))
         return value
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
@@ -264,7 +263,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         value = float('-inf')
         for action in actions:
             successor = gameState.generateSuccessor(0, action)
-            value = max(value, self.alphabeta(successor, depth, 1, alpha, beta))
+            value = max(value, self.__alphabeta__(successor, depth, 1, alpha, beta))
             if value > beta:
                 return value
             alpha = max(alpha, value)
@@ -281,9 +280,9 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         for action in actions:
             successor = gameState.generateSuccessor(agentIndex, action)
             if agentIndex == gameState.getNumAgents() - 1:
-                value = min(value, self.alphabeta(successor, depth - 1, 0, alpha, beta))
+                value = min(value, self.__alphabeta__(successor, depth - 1, 0, alpha, beta))
             else:
-                value = min(value, self.alphabeta(successor, depth, agentIndex + 1,alpha, beta))
+                value = min(value, self.__alphabeta__(successor, depth, agentIndex + 1,alpha, beta))
             if value < alpha:
                 return value
             beta = min(beta, value)
@@ -401,17 +400,17 @@ def betterEvaluationFunction(currentGameState):
             ghostFeature -= 2.0 / (d + 1.0)
 
     #Weights
-    w_score = 1.0
-    w_food = 10.0
-    w_foodCount = -4.0
-    w_capsule = 6.0
-    w_ghost = 10.0
+    wScore = 1.0
+    wFood = 10.0
+    wFoodCount = -4.0
+    wCapsule = 6.0
+    wGhost = 10.0
 
-    value = (w_score * score +
-             w_food * foodFeature +
-             w_foodCount * foodCountPenalty +
-             w_capsule * capsuleFeature +
-             w_ghost * ghostFeature)
+    value = (wScore * score +
+             wFood * foodFeature +
+             wFoodCount * foodCountPenalty +
+             wCapsule * capsuleFeature +
+             wGhost * ghostFeature)
 
     return value
     
