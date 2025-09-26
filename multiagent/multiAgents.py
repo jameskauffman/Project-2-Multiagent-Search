@@ -341,16 +341,79 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
 
 def betterEvaluationFunction(currentGameState):
     """
-    Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
-    evaluation function (question 5).
-    DESCRIPTION: <write something here so we know what you did>
+    Robust, feature-based evaluation:
+      - reward higher game score
+      - reward being closer to the nearest food
+      - penalize number of remaining food pellets
+      - reward being near scared ghosts, avoid active ghosts (large penalty if collision)
+      - reward being closer to capsules
+      This is an improved evaluation function for the game state, but methodolligy is similar to the previous one.
+      We use a weighted linear combination of several features to evaluate the game state.
     """
-    #Talk to Tony about different algorithms to consider
-    #Ideas: 
-    #Value iteration or Policy iteration is the first that come to mind, but this isn't really a MDP
-    #Maybe A* search if we can come up with a good heuristic
+    #Terminal checks
+    if currentGameState.isWin():
+        return float('inf')
+    if currentGameState.isLose():
+        return float('-inf')
 
-    return util.raiseNotDefined
+    from util import manhattanDistance
+
+    pos = currentGameState.getPacmanPosition()
+    score = currentGameState.getScore()
+
+    foodList = currentGameState.getFood().asList()
+    numFood = len(foodList)
+
+    capsules = currentGameState.getCapsules()
+
+    ghostStates = currentGameState.getGhostStates()
+    ghostPos = [g.getPosition() for g in ghostStates]
+    scaredTimes = [g.scaredTimer for g in ghostStates]
+
+    #Feature: closest food (higher is better)
+    if foodList:
+        minFoodDist = min(manhattanDistance(pos, f) for f in foodList)
+        foodFeature = 1.0 / (minFoodDist + 1.0)
+    else:
+        foodFeature = 0.0
+
+    #Feature: remaining food penalty
+    foodCountPenalty = float(numFood)
+
+    #Feature: capsules (prefer fewer; reward closeness)
+    if capsules:
+        minCapDist = min(manhattanDistance(pos, c) for c in capsules)
+        capsuleFeature = 1.0 / (minCapDist + 1.0)
+    else:
+        capsuleFeature = 0.0
+
+    #Feature: ghosts (avoid active ghosts strongly, approach scared ghosts)
+    ghostFeature = 0.0
+    for gp, st in zip(ghostPos, scaredTimes):
+        d = manhattanDistance(pos, gp)
+        if st > 0:
+            # scared ghost: approaching is good (scaled by remaining scared time)
+            ghostFeature += 2.0 / (d + 1.0) * (st / float(st + 1))
+        else:
+            # active ghost: strongly avoid; immediate neighbors = very bad
+            if d <= 1:
+                return float('-inf')
+            ghostFeature -= 2.0 / (d + 1.0)
+
+    #Weights
+    w_score = 1.0
+    w_food = 10.0
+    w_foodCount = -4.0
+    w_capsule = 6.0
+    w_ghost = 10.0
+
+    value = (w_score * score +
+             w_food * foodFeature +
+             w_foodCount * foodCountPenalty +
+             w_capsule * capsuleFeature +
+             w_ghost * ghostFeature)
+
+    return value
     
 
     
